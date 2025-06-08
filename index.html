@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with Sher</title>
+    
+    <!-- CSS STYLES with ANIMATIONS -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+        :root {
+            --body-bg: #121212;
+            --chat-bg: #1e1e1e;
+            --user-msg-bg: #0084ff;
+            --bot-msg-bg: #3a3b3c;
+            --text-light: #e4e6eb;
+            --text-dark: #f5f5f5;
+            --input-bg: #242526;
+            --border-color: #3e4042;
+            --header-bg: #242526;
+            --accent-color: #0084ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--body-bg);
+            color: var(--text-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Animation for the chat container on load */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        #chat-container {
+            width: 100%;
+            max-width: 700px;
+            height: 90vh;
+            max-height: 800px;
+            background-color: var(--chat-bg);
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        #chat-header {
+            padding: 15px 20px;
+            background-color: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+        }
+
+        #chat-header h1 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-left: 12px;
+        }
+
+        #avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        #chat-box {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        #chat-box::-webkit-scrollbar { width: 6px; }
+        #chat-box::-webkit-scrollbar-track { background: var(--chat-bg); }
+        #chat-box::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+        #chat-box::-webkit-scrollbar-thumb:hover { background: #777; }
+
+        /* Animation for new messages */
+        @keyframes fadeInSlideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            font-size: 0.95rem;
+            animation: fadeInSlideUp 0.4s ease-out;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background-color: var(--user-msg-bg);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            background-color: var(--bot-msg-bg);
+            color: var(--text-light);
+            border-bottom-left-radius: 4px;
+        }
+        
+        #input-container {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            background-color: var(--header-bg);
+        }
+
+        #user-input {
+            flex-grow: 1;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 22px;
+            background-color: var(--input-bg);
+            font-size: 1rem;
+            outline: none;
+            color: var(--text-light);
+        }
+        
+        #user-input:focus {
+            box-shadow: 0 0 0 2px var(--accent-color);
+        }
+
+        #send-btn {
+            background: none; border: none; padding: 0 15px;
+            cursor: pointer; color: var(--accent-color);
+            font-size: 1.5rem; display: flex; align-items: center;
+            justify-content: center; transition: transform 0.2s ease;
+        }
+        #send-btn:hover { transform: scale(1.15) rotate(15deg); }
+        
+        #typing-indicator {
+            display: none; align-self: flex-start;
+            padding: 10px 15px 0; margin-left: 5px;
+        }
+        
+        /* Animation for typing indicator dots */
+        @keyframes bounce {
+          0%, 80%, 100% { transform: scale(0); }
+          40% { transform: scale(1.0); }
+        }
+
+        .typing-dot {
+            width: 8px; height: 8px; background-color: #8e8e8e;
+            border-radius: 50%; display: inline-block;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+    </style>
+</head>
+<body>
+
+    <!-- HTML STRUCTURE -->
+    <div id="chat-container">
+        <div id="chat-header">
+            <div id="avatar">S</div>
+            <h1>Himanshu (Sher)</h1>
+        </div>
+        <div id="chat-box">
+            <div class="message bot-message">
+                Oye BKL! Kya haal? Phir se 'IITian wali attitude' dikha raha hai kya?
+            </div>
+        </div>
+        <div id="typing-indicator">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+        </div>
+        <form id="input-container">
+            <input type="text" id="user-input" placeholder="Kuch bol, BKL..." autocomplete="off">
+            <button id="send-btn" type="submit">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+        </form>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script type="module">
+        // Import the Google AI SDK from a CDN
+        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+
+        // --- ⚠️ IMPORTANT: API KEY SETUP ---
+        // 1. Get your API key from Google AI Studio: https://aistudio.google.com/app/apikey
+        // 2. PASTE your API key below.
+        // 3. DO NOT share this key publicly or commit it to a public repository.
+        //    This client-side implementation is for personal projects and demos.
+        const API_KEY = "AIzaSyAkyJWVrXBAYqY6I1Df5ZQ1HIwDs0lqKV8"; 
+        // ---
+
+        const chatBox = document.getElementById('chat-box');
+        const userInput = document.getElementById('user-input');
+        const inputForm = document.getElementById('input-container');
+        const typingIndicator = document.getElementById('typing-indicator');
+
+        const genAI = new GoogleGenerativeAI(API_KEY);
+        const chatHistory = [];
+
+        // The detailed persona for your friend, "Sher"
+        const systemInstruction = `You are my friend Himanshu, also called Sher. We were bench partners for 4 years. You are a bit rough around the edges, use friendly slang and insults like "BKL", "BC", "Oye", and roast me (Sidd) constantly. We have inside jokes about our engineering college, a teacher named Anoop Sir, bad mess food, hostel life, and our struggles with subjects like Thermodynamics and Control Systems. You are funny, direct, and your humor is a mix of Hinglish and relatable engineering student pain. Always maintain this persona. Here are our chat examples:
+
+Sidd: "Arey tune diode ki jagah Anoop ka calculator use kiya tha kya? 😭"
+Sher: Oye benchod! Kal practical mein tune meri pen churai thi na?
+Sidd: Arey Sherr! Teri woh pen se mera khud ka kharcha hua tha… bloody thief kehlaya tha tujhe 😂
+Sidd: sends photo of broken bench Caption: Yaad hai? 12th mein tune yeh tod diya tha "weight check" ke chakkar mein!
+Sher: BC teri wajah se 500₹ fine bhara tha! Tu bola tha "Sher se zyada strong nahi hai bench" 😤
+Sher: calls back "KYA HUA BKL?"
+Sidd: "Arey… pocket call hogaya… teri yaad aa rahi thi" ❤️
+Sher: "GAY LAGTA HAI TU" hangs up
+Sidd:
+"BC yeh 'dielectric constant' ki jagah 'aata ka stock' discuss kar raha hai 😭"
+Kunu ko bhi lekar aaunga agli baar yaad hai ham dono kunu aur rohit kitnze maaze karte the lunch ke time kitni bakchodi 
+
+Sidd: [after practicals]
+"Saale tune vernier caliper ko 'paapad press' bol ke hasaya... ab 2 hour detention hai"
+
+Sher:
+"Worth it! Anoop ne 'instrument error' ki jagah 'baniya fraud' likh diya report mein 🤣"
+
+Sher: [midnight call]
+"Oye... kal project submit karna hai... tune 'Solar System' pe 'Anoop Kirana Store' ka logo chipka diya?"
+
+Sidd:
+"Haan yaar... Sun = Anoop's face... Planets = Loose chana 😂"
+
+Sidd: [sends old notebook]
+"Yaad hai? Tune Anoop's photo pe 'Minimum 10% Off' sticker lagaya tha"
+
+Sher:
+"Aur usne 'F=ma' ki jagah 'Fraud = My Attitude' padh liya tha 😭"
+
+Sher: [during exam]
+"BKL Anoop ne 'Ohm's Law' question mein 'Jain Cable Networks' ka example de diya!"
+
+Sidd:
+"Maine answer likha 'Resistance bekar hai... current free mein flow karega' 😂"
+
+Sidd: [status update]
+Pic of Anoop Sir with text:
+"Physics Teacher / Part-Time Baniya / Full-Time Chindi"
+
+Sher: [comments]
+"Specialization: Converting Potential Energy into Profit"
+
+Sher: [after school]
+"Saale aaj Anoop ne mujhe 'Newton's 3rd Law' padhate waqt '3rd class customer' bol diya"
+
+Sidd:
+"Toh tune 'Every action has equal & opposite reaction' ki jagah 'Every discount has hidden GST' likh diya?"
+
+Sidd: [sends meme]
+Anoop Sir as Shylock from Merchant of Venice:
+"Give me 500g of 12th Marks... or 10% extra in practicals!"
+
+Sher:
+"BC yeh physics lab ko mandi samajh rakha hai 😭"`;
+
+        const model = genAI.getGenerativeModel({ 
+            model: "gemini-1.5-flash",
+            systemInstruction: systemInstruction,
+        });
+
+        function displayMessage(text, sender) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', `${sender}-message`);
+            messageElement.textContent = text;
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        async function handleChat(event) {
+            event.preventDefault();
+            
+            const userProblem = userInput.value.trim();
+            if (!userProblem) return;
+
+            displayMessage(userProblem, 'user');
+            
+            chatHistory.push({ role: 'user', parts: [{ text: userProblem }] });
+
+            userInput.value = '';
+            typingIndicator.style.display = 'flex';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const chat = model.startChat({ history: chatHistory.slice(0, -1) });
+                const result = await chat.sendMessage(userProblem);
+                const response = await result.response;
+                const botResponseText = response.text();
+
+                chatHistory.push({ role: 'model', parts: [{ text: botResponseText }] });
+                displayMessage(botResponseText, 'bot');
+
+            } catch (error) {
+                console.error("Error calling Gemini API:", error);
+                let errorMessage = "Abe server down ho gaya lagta hai. Ya tera hostel ka wifi chala gaya? 😂 Baad mein try kar.";
+                if (error.message.includes("API key not valid")) {
+                    errorMessage = "BKL, tera API key ajeeb hai. Anoop sir se pooch ke daala tha kya? F12 daba ke dekh kya error hai.";
+                }
+                displayMessage(errorMessage, 'bot');
+            } finally {
+                typingIndicator.style.display = 'none';
+            }
+        }
+
+        inputForm.addEventListener('submit', handleChat);
+    </script>
+
+</body>
+</html>
